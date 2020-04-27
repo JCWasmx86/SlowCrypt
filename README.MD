@@ -33,8 +33,8 @@ u64 encrypt(u64 toEncrypt,u64 lastValue,Key key){
 ```
 # Usage
 1. Execute keygen to generate a key. (key.key file)
-2. Use encrypt to encrypt the file (encrypt <inFile> <outFile> [<keyfile>(default: key.key]
-2. Use decrypt to decrypt the file (decrypt <inFile> <outFile> [<keyfile>(default: key.key]
+2. Use encrypt to encrypt the file (encrypt <inFile> <outFile> [<keyfile>(default: key.key)]
+2. Use decrypt to decrypt the file (decrypt <inFile> <outFile> [<keyfile>(default: key.key)]
 # Disclaimer
 I wouldn't recommend to use this algorithm to encrypt important data, because Slowcrypt may be unsecure.
 Use something like AES-256 instead.
