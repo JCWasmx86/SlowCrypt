@@ -9,17 +9,32 @@
 uint64_t encrypt(uint64_t v,uint64_t lastValue,Key k);
 
 int main(int argc,char** argv){
-	if(argc<4){
+	if(argc<3){
 		printf("%s <infile> <outfile> [<keyfile>(default key.key)]\n",argv[0]);
 		return -1;
 	}
 	FILE* toEncrypt=fopen(argv[1],"rb");
+	if(toEncrypt==NULL){
+		fprintf(stderr,"Couldn\'t open %s\n",argv[1]);
+		return EXIT_FAILURE;
+	}
 	int fd=fileno(toEncrypt);
 	struct stat buf;
 	fstat(fd, &buf);
 	off_t size = buf.st_size;
 	FILE* encrypted=fopen(argv[2],"wb");
+	if(encrypted==NULL){
+		fprintf(stderr,"Couldn\'t open %s\n",argv[2]);
+		fclose(toEncrypt);
+		return EXIT_FAILURE;
+	}
 	Key key=readKey(argv[3]==NULL?"key.key":argv[3]);
+	if(key==NULL){
+		fprintf(stderr,"Couldn'\t load key!\n");
+		fclose(toEncrypt);
+		fclose(encrypted);
+		return EXIT_FAILURE;
+	}
 	fputc(0,encrypted);//How many padded zeroes?
 	int paddedZeroes=0;
 	uint64_t cnt=0;

@@ -4,6 +4,8 @@
 #include "shared.h"
 Key readKey(char* name){
 	FILE* fp=fopen(name,"rb");
+	if(fp==NULL)
+		return NULL;
 	Key key=calloc(1,sizeof(struct _key));
 	assert(key!=NULL);
 	fread(&key->xorValue,8,1,fp);
