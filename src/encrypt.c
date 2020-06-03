@@ -30,7 +30,7 @@ int main(int argc,char** argv){
 	}
 	Key key=readKey(argv[3]==NULL?"key.key":argv[3]);
 	if(key==NULL){
-		fprintf(stderr,"Couldn'\t load key!\n");
+		fprintf(stderr,"Couldn\'t load key!\n");
 		fclose(toEncrypt);
 		fclose(encrypted);
 		return EXIT_FAILURE;
