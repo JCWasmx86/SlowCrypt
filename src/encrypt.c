@@ -21,7 +21,6 @@ int main(int argc,char** argv){
 	int fd=fileno(toEncrypt);
 	struct stat buf;
 	fstat(fd, &buf);
-	off_t size = buf.st_size;
 	FILE* encrypted=fopen(argv[2],"wb");
 	if(encrypted==NULL){
 		fprintf(stderr,"Couldn\'t open %s\n",argv[2]);

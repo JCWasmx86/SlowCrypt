@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
+#include <math.h>
+#include <openssl/sha.h>
 #include "shared.h"
 Key readKey(char* name){
 	FILE* fp=fopen(name,"rb");
@@ -58,4 +61,35 @@ uint64_t rotate(uint64_t v, int n) {
     if (n)
         v = (v >> n) | (v << (64-n));
     return v;
+}
+void* hash(const char* password){
+	uint8_t* ptr=calloc(HASH_LENGTH,1);
+	size_t len=strlen(password);
+	assert(len>3);
+	memcpy(ptr,password,len);
+	//Stretch the init array to 86 bytes.
+	for(size_t i=len;i<HASH_LENGTH;i++){
+		ptr[i]=((uint64_t)pow((ptr[i-1]^ptr[i-2]),ptr[i-3]))&0xFF;
+	}
+	unsigned char hash[SHA256_DIGEST_LENGTH];
+	for(int i=0;i<HASH_LENGTH;i++){
+		SHA256_CTX sha256;
+		SHA256_Init(&sha256);
+		SHA256_Update(&sha256, &ptr[i], len-i);
+		SHA256_Final(hash, &sha256);
+		for(int idx=i;i<SHA256_DIGEST_LENGTH;i++){
+			ptr[idx%HASH_LENGTH]^=hash[idx-i];
+		}
+	}
+	memset(hash,0,SHA256_DIGEST_LENGTH);
+	return ptr;
+}
+uint64_t reinterpret(int64_t i){
+	return *((uint64_t*)&i);
+}
+uint64_t generate64BitValue(void){
+	uint64_t upperHalf=((uint64_t)random())<<32;
+	uint64_t lowerHalf=random();
+	uint64_t complete=upperHalf|lowerHalf;
+	return reinterpret(complete);
 }
