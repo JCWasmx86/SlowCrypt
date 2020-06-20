@@ -18,10 +18,6 @@ int main(int argc,char** argv){
 		fprintf(stderr,"Couldn\'t open %s\n",argv[1]);
 		return EXIT_FAILURE;
 	}
-	int fd=fileno(toDecrypt);
-	struct stat buf;
-	fstat(fd, &buf);
-	off_t size = buf.st_size;
 	FILE* clearText=fopen(argv[2],"wb");
 	if(clearText==NULL){
 		fprintf(stderr,"Couldn\'t open %s\n",argv[2]);
@@ -38,6 +34,10 @@ int main(int argc,char** argv){
 	uint8_t paddedZeroes=fgetc(toDecrypt);
 	for(int i=0;i<7;i++)
 		fgetc(toDecrypt);
+	int fd=fileno(toDecrypt);
+	struct stat buf;
+	fstat(fd, &buf);
+	off_t size = buf.st_size;
 	uint64_t cnt=0;
 	uint64_t lastValue=0;
 	uint64_t numBlocks=(size-8)/8;

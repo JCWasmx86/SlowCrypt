@@ -1,7 +1,6 @@
 #include <stdint.h>
 #ifndef _SHARED_H
 #define _SHARED_H
-#define HASH_LENGTH 86
 typedef struct _xorShift {
 	uint64_t *state;
 	uint64_t index;
@@ -25,7 +24,6 @@ Key readKey(char* name);
 uint64_t xorshift(XorShift state);
 XorShift readXorShift(FILE *fp);
 uint64_t reverse(uint64_t x);
-void* hash(const char* password);
 uint64_t reinterpret(int64_t i);
 uint64_t generate64BitValue(void);
 #endif

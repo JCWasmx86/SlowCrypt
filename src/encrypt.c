@@ -18,9 +18,6 @@ int main(int argc,char** argv){
 		fprintf(stderr,"Couldn\'t open %s\n",argv[1]);
 		return EXIT_FAILURE;
 	}
-	int fd=fileno(toEncrypt);
-	struct stat buf;
-	fstat(fd, &buf);
 	FILE* encrypted=fopen(argv[2],"wb");
 	if(encrypted==NULL){
 		fprintf(stderr,"Couldn\'t open %s\n",argv[2]);
