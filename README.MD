@@ -13,7 +13,7 @@ After that multiple transformations are applied to each block. (See [here](src/e
 2. Use encrypt to encrypt the file (encrypt <inFile> <outFile> [<keyfile>(default: key.key)]
 2. Use decrypt to decrypt the file (decrypt <inFile> <outFile> [<keyfile>(default: key.key)]
 
-#TODO
+# TODO
 -[] Improve performance
 -[] Add the possibility of generating a key from a password
 -[] Improve documentation
