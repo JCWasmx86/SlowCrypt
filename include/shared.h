@@ -15,7 +15,7 @@ typedef struct _key{
 	XorShift xorState;
 	XorShift addState;
 	uint8_t howManyXors;//How many xors with xorState?
-	uint16_t howManyBitSets;//How many bits will be toggled from state
+	uint16_t howManyBitSets;//How many bits will be toggled from state?
 	uint64_t startXorValue;//Start for state+howManyXors
 	uint16_t howManyAdds;//How many random numbers will be added?
 }*Key;

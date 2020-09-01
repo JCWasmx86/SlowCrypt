@@ -14,13 +14,17 @@ int main(int argc,char** argv){
 	}
 	srandom(seed);
 	FILE *fp =fopen(argv[1]==NULL?"key.key":argv[1],"wb");
-	uint64_t xorV=generate64BitValue();//8
+	//Each block is XOR'd with this value
+	uint64_t xorV=generate64BitValue();
 	fwrite(&xorV,8,1,fp);
-	uint64_t addV=generate64BitValue();//16
+	//To each block, this value is added ==>Exploiting Overflow
+	uint64_t addV=generate64BitValue();
 	fwrite(&addV,8,1,fp);
-	int8_t shiftValue=random()%64*(random()&1?-1:1);//17
+	//Rotate the bits in the block
+	int8_t shiftValue=random()%64*(random()&1?-1:1);
 	fwrite(&shiftValue,1,1,fp);
-	uint64_t firstValue=generate64BitValue();//25
+	//If the first block is encrypted, use this value for XOR
+	uint64_t firstValue=generate64BitValue();
 	fwrite(&firstValue,8,1,fp);
 	for(int i=0;i<3;i++){
 		uint64_t maxSize=generate64BitValue()&0xFFFF;
@@ -33,13 +37,13 @@ int main(int argc,char** argv){
 		uint64_t index=generate64BitValue()%maxSize;
 		fwrite(&index,8,1,fp);
 	}
-	uint8_t xorC=random()&0xFF;//26
+	uint8_t xorC=random()&0xFF;
 	fwrite(&xorC,1,1,fp);
-	uint16_t bitC=random()&0xFFFF;//28
+	uint16_t bitC=random()&0xFFFF;
 	fwrite(&bitC,2,1,fp);
-	uint64_t sX=generate64BitValue();//36
+	uint64_t sX=generate64BitValue();
 	fread(&sX,8,1,fp);
-	uint16_t howManyAdds=random()&0xFFFF;//38
+	uint16_t howManyAdds=random()&0xFFFF;
 	fwrite(&howManyAdds,2,1,fp);
 	fclose(fp);
 	return 0;
