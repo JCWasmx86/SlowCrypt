@@ -14,9 +14,9 @@ After that multiple transformations are applied to each block. (See [here](src/e
 2. Use decrypt to decrypt the file (decrypt <inFile> <outFile> [<keyfile>(default: key.key)]
 
 # TODO
-- [] Improve performance
-- [] Add the possibility of generating a key from a password
-- [] Improve documentation
+- [ ] Improve performance
+- [ ] Add the possibility of generating a key from a password
+- [ ] Improve documentation
 
 # Disclaimer
 I wouldn't recommend to use this algorithm to encrypt important data, because Slowcrypt may be unsecure.
