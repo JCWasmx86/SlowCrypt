@@ -40,9 +40,9 @@ int main(int argc,char** argv){
 	uint8_t xorC=random()&0xFF;
 	fwrite(&xorC,1,1,fp);
 	uint16_t bitC=random()&0xFFFF;
-	fwrite(&bitC,2,1,fp);
+	fwrite(&bitC,1,2,fp);
 	uint64_t sX=generate64BitValue();
-	fread(&sX,8,1,fp);
+	fwrite(&sX,1,8,fp);
 	uint16_t howManyAdds=random()&0xFFFF;
 	fwrite(&howManyAdds,2,1,fp);
 	fclose(fp);

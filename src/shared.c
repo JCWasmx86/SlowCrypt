@@ -10,17 +10,17 @@ Key readKey(char* name){
 		return NULL;
 	Key key=calloc(1,sizeof(struct _key));
 	assert(key!=NULL);
-	fread(&key->xorValue,8,1,fp);
-	fread(&key->addValue,8,1,fp);
-	fread(&key->shiftValue,1,1,fp);
-	fread(&key->firstValue,8,1,fp);
+	assert(fread(&key->xorValue,1,8,fp)==8);
+	assert(fread(&key->addValue,1,8,fp)==8);
+	assert(fread(&key->shiftValue,1,1,fp)==1);
+	assert(fread(&key->firstValue,1,8,fp)==8);
 	key->state=readXorShift(fp);
 	key->xorState=readXorShift(fp);
 	key->addState=readXorShift(fp);
-	fread(&key->howManyXors,1,1,fp);
-	fread(&key->howManyBitSets,2,1,fp);
-	fread(&key->startXorValue,8,1,fp);
-	fread(&key->howManyAdds,2,1,fp);
+	assert(fread(&key->howManyXors,1,1,fp)==1);
+	assert(fread(&key->howManyBitSets,1,2,fp)==2);
+	assert(fread(&key->startXorValue,1,8,fp)==8);
+	assert(fread(&key->howManyAdds,1,2,fp)==2);
 	fclose(fp);
 	return key;
 }
