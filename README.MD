@@ -1,7 +1,7 @@
 # Slowcrypt
 This is an encryption algorithm that uses a variable key-length.
-It's too slow for nearly all applications (Encryption is around 30KB/s and decryption 
-at around 35KB/s). At least the memory usage is very low (Around 1MB).
+It's too slow for nearly all applications (Encryption is around 6-7KB/s and decryption 
+at around 7-10KB/s). At least the memory usage is very low (Around 1MB).
 Slowcrypt uses XOR,xorshift and exploits unsigned-overflow for the encryption.
 This algorithm operates on 8-byte-numbers, so it will be padded with zeroes at the end, if the length of the plaintext 
 is not a multiple of 8.
