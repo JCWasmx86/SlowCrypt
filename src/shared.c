@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+static XorShift readXorShift(FILE *fp);
+
 Key readKey(char *name) {
 	FILE *fp = fopen(name, "rb");
 	if (fp == NULL) {
@@ -32,7 +34,7 @@ uint64_t reverse(uint64_t x) {
 	}
 	return r;
 }
-XorShift readXorShift(FILE *fp) {
+static XorShift readXorShift(FILE *fp) {
 	XorShift xs = calloc(1, sizeof(struct _xorShift));
 	assert(xs);
 	assert(fread(&xs->maxSize, 1, 8, fp) == 8);

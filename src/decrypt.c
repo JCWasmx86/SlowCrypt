@@ -73,6 +73,7 @@ int main(int argc, char **argv) {
 	fclose(clearText);
 	return 0;
 }
+
 uint64_t decrypt(uint64_t v, uint64_t lastValue, Key k) {
 	uint64_t start = reverse(v);
 	uint64_t generatedRandomNumber = k->startXorValue;
@@ -87,7 +88,7 @@ uint64_t decrypt(uint64_t v, uint64_t lastValue, Key k) {
 	for (uint16_t i = 0; i < k->howManyAdds; i++)
 		tmp += xorshift(k->addState);
 	uint64_t tmp2 = 0;
-	for (uint16_t i 4 = 0; i < k->howManyXors; i++)
+	for (uint16_t i = 0; i < k->howManyXors; i++)
 		tmp2 ^= xorshift(k->xorState);
 	start ^= lastValue;
 	start ^= tmp2;

@@ -26,7 +26,6 @@ typedef struct _key {
 uint64_t rotate(uint64_t v, int n);
 Key readKey(char *name);
 uint64_t xorshift(XorShift state);
-XorShift readXorShift(FILE *fp);
 uint64_t reverse(uint64_t x);
 uint64_t reinterpret(int64_t i);
 uint64_t generate64BitValue(void);
