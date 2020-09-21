@@ -62,13 +62,7 @@ int main(int argc, char **argv) {
 		memset(rawBytes, 0, 8);
 		cnt++;
 	}
-	free(key->state->state);
-	free(key->xorState->state);
-	free(key->addState->state);
-	free(key->state);
-	free(key->xorState);
-	free(key->addState);
-	free(key);
+	releaseKey(key);
 	fclose(toDecrypt);
 	fclose(clearText);
 	return 0;

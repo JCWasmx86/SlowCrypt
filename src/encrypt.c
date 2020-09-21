@@ -59,13 +59,7 @@ int main(int argc, char **argv) {
 	}
 	rewind(encrypted);
 	fputc(paddedZeroes, encrypted);
-	free(key->state->state);
-	free(key->xorState->state);
-	free(key->addState->state);
-	free(key->state);
-	free(key->xorState);
-	free(key->addState);
-	free(key);
+	releaseKey(key);
 	fclose(toEncrypt);
 	fclose(encrypted);
 	return 0;

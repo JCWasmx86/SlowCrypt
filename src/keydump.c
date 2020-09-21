@@ -21,7 +21,8 @@ int main(int argc, char **argv) {
 			canSkip = 1;
 			continue;
 		}
-		if (!canSkip && filename[0] == '-') { // Skip options, but only before --
+		if (!canSkip &&
+			filename[0] == '-') { // Skip options, but only before --
 			continue;
 		}
 		numberOfKeysPrinted++;
@@ -38,7 +39,7 @@ static void printKey(char *filename) {
 		fprintf(stderr, "Couldn't open key: %s\n", filename);
 		return;
 	}
-	printf("Dumping key: %s\n",filename);
+	printf("Dumping key: %s\n", filename);
 	printf("xorValue: %" PRIu64 "\n", key->xorValue);
 	printf("addValue: %" PRIu64 "\n", key->addValue);
 	printf("shiftValue: %" PRId8 "\n", key->shiftValue);
@@ -50,13 +51,7 @@ static void printKey(char *filename) {
 	printf("howManyBitSets: %" PRIu16 "\n", key->howManyBitSets);
 	printf("addValue: %" PRIu64 "\n", key->startXorValue);
 	printf("howManyAdds: %" PRIu16 "\n", key->howManyAdds);
-	free(key->state->state);
-	free(key->xorState->state);
-	free(key->addState->state);
-	free(key->state);
-	free(key->xorState);
-	free(key->addState);
-	free(key);
+	releaseKey(key);
 }
 static void dumpXorShift(XorShift shift) {
 	printf("Xorstate: %" PRIu64 " states\n", shift->maxSize);

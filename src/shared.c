@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 static XorShift readXorShift(FILE *fp);
 
 Key readKey(char *name) {
@@ -26,6 +27,18 @@ Key readKey(char *name) {
 	assert(fread(&key->howManyAdds, 1, 2, fp) == 2);
 	fclose(fp);
 	return key;
+}
+void releaseKey(Key key) {
+	if (!key) {
+		return;
+	}
+	free(key->state->state);
+	free(key->xorState->state);
+	free(key->addState->state);
+	free(key->state);
+	free(key->xorState);
+	free(key->addState);
+	free(key);
 }
 uint64_t reverse(uint64_t x) {
 	long r = 0;
