@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 	uint64_t cnt = 0;
 	uint64_t lastValue = 0;
 	uint64_t numBlocks = (size - 8) / 8;
-	int index=0;
+	int index = 0;
 	while (1) {
 		char rawBytes[8];
 		int readBytes = fread(rawBytes, 1, 8, toDecrypt);
@@ -57,9 +57,9 @@ int main(int argc, char **argv) {
 		uint64_t read = *((uint64_t *)rawBytes);
 		uint64_t decrypted =
 			decrypt(read, cnt == 0 ? key->firstValue : lastValue, key);
-		decrypted^=key->hash[index++];
-		if(index==8){
-			index=0;
+		decrypted ^= key->hash[index++];
+		if (index == 8) {
+			index = 0;
 		}
 		if (cnt < (numBlocks - 1)) {
 			fwrite(&decrypted, 8, 1, clearText);

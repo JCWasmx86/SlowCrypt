@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
 	uint64_t lastValue = 0;
 	for (int i = 0; i < 7; i++)
 		fputc(rand() & 0xFF, encrypted); // Padding to 8
-	int index=0;
+	int index = 0;
 	while (1) {
 		char rawBytes[8];
 		int readBytes = fread(rawBytes, 1, 8, toEncrypt);
@@ -56,9 +56,9 @@ int main(int argc, char **argv) {
 			paddedZeroes = 8 - readBytes;
 		}
 		uint64_t read = *((uint64_t *)rawBytes);
-		read^=key->hash[index++];
-		if(index==8){
-			index=0;
+		read ^= key->hash[index++];
+		if (index == 8) {
+			index = 0;
 		}
 		uint64_t encryptedInt =
 			encrypt(read, cnt == 0 ? key->firstValue : lastValue, key);
