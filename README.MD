@@ -9,15 +9,16 @@ is not a multiple of 8.
 The plaintext is divided into blocks of 8-bytes, the last block may be padded with zeroes to have 8 bytes.
 After that multiple transformations are applied to each block. (See [here](src/encrypt.c))
 # Usage
-1. Execute keygen to generate a key. (key.key file)
-2. Use encrypt to encrypt the file (encrypt <inFile> <outFile> [<keyfile>(default: key.key)]
-2. Use decrypt to decrypt the file (decrypt <inFile> <outFile> [<keyfile>(default: key.key)]
-
+1. Execute keygen to generate a key: `keygen`
+2. Use encrypt to encrypt the file: `encrypt <inputFile> <outputFile> <keyFile>`
+3. Use decrypt to decrypt the file: `decrypt <inputFile> <outputFile> <keyFile>`
+If you don't  give a keyfile to `encrypt` or `decrypt`, `key.key` is assumed implicitly.
 # TODO
 - [ ] Improve performance
 - [ ] Add the possibility of generating a key from a password
 - [ ] Improve documentation
 
 # Disclaimer
-I wouldn't recommend to use this algorithm to encrypt important data, because Slowcrypt may be unsecure.
-Use something like AES-256 instead.
+Don't use this algorithm for encrypting important data.
+Anyone who has experience with cryptography, will probably break SlowCrypt in less than a weekend.
+Use a battle-hardened, tested algorithm like AES-256 instead.
