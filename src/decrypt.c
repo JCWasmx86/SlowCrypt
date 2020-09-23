@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,26 +12,28 @@
 uint64_t decrypt(uint64_t v, uint64_t lastValue, Key k);
 
 int main(int argc, char **argv) {
-	if (argc < 3) {
-		printf("%s <infile> <outfile> [<keyfile>(default key.key)]\n", argv[0]);
-		return -1;
-	}
-	FILE *toDecrypt = fopen(argv[1], "rb");
+	Arguments *arguments = calloc(1, sizeof(Arguments));
+	assert(arguments);
+	evalArguments(argc, argv, arguments);
+	FILE *toDecrypt = fopen(arguments->inFile, "rb");
 	if (toDecrypt == NULL) {
-		fprintf(stderr, "Couldn\'t open %s\n", argv[1]);
+		fprintf(stderr, "Couldn\'t open input file %s\n", arguments->inFile);
+		free(arguments);
 		return EXIT_FAILURE;
 	}
-	FILE *clearText = fopen(argv[2], "wb");
+	FILE *clearText = fopen(arguments->outFile, "wb");
 	if (clearText == NULL) {
-		fprintf(stderr, "Couldn\'t open %s\n", argv[2]);
+		fprintf(stderr, "Couldn\'t open output file %s\n", arguments->outFile);
 		fclose(toDecrypt);
+		free(arguments);
 		return EXIT_FAILURE;
 	}
-	Key key = readKey(argv[3] == NULL ? "key.key" : argv[3]);
+	Key key = readKey(arguments->keyFile);
 	if (key == NULL) {
-		fprintf(stderr, "Couldn'\t load key!\n");
+		fprintf(stderr, "Couldn'\t load keyfile %s\n", arguments->keyFile);
 		fclose(toDecrypt);
 		fclose(clearText);
+		free(arguments);
 		return EXIT_FAILURE;
 	}
 	uint8_t paddedZeroes = fgetc(toDecrypt);
@@ -44,6 +47,7 @@ int main(int argc, char **argv) {
 	uint64_t cnt = 0;
 	uint64_t lastValue = 0;
 	uint64_t numBlocks = (size - 8) / 8;
+	int index=0;
 	while (1) {
 		char rawBytes[8];
 		int readBytes = fread(rawBytes, 1, 8, toDecrypt);
@@ -53,6 +57,10 @@ int main(int argc, char **argv) {
 		uint64_t read = *((uint64_t *)rawBytes);
 		uint64_t decrypted =
 			decrypt(read, cnt == 0 ? key->firstValue : lastValue, key);
+		decrypted^=key->hash[index++];
+		if(index==8){
+			index=0;
+		}
 		if (cnt < (numBlocks - 1)) {
 			fwrite(&decrypted, 8, 1, clearText);
 		} else {
@@ -65,6 +73,7 @@ int main(int argc, char **argv) {
 	releaseKey(key);
 	fclose(toDecrypt);
 	fclose(clearText);
+	free(arguments);
 	return 0;
 }
 

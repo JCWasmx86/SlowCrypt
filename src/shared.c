@@ -1,12 +1,16 @@
 #include "shared.h"
 #include <assert.h>
 #include <math.h>
+#include <openssl/sha.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 static XorShift readXorShift(FILE *fp);
-
+static void printHelp(char *this);
 Key readKey(char *name) {
 	FILE *fp = fopen(name, "rb");
 	if (fp == NULL) {
@@ -25,6 +29,16 @@ Key readKey(char *name) {
 	assert(fread(&key->howManyBitSets, 1, 2, fp) == 2);
 	assert(fread(&key->startXorValue, 1, 8, fp) == 8);
 	assert(fread(&key->howManyAdds, 1, 2, fp) == 2);
+	rewind(fp);
+	int fd = fileno(fp);
+	struct stat buf;
+	fstat(fd, &buf);
+	off_t size = buf.st_size;
+	void *buffer = malloc(size);
+	assert(buffer);
+	assert(fread(buffer, 1, size, fp) == (size_t)size);
+	SHA512(buffer, size, (unsigned char *)key->hash);
+	free(buffer);
 	fclose(fp);
 	return key;
 }
@@ -85,4 +99,166 @@ uint64_t generate64BitValue(void) {
 	uint64_t lowerHalf = random();
 	uint64_t complete = upperHalf | lowerHalf;
 	return reinterpret(complete);
+}
+void evalArguments(int argc, char **argv, Arguments *arguments) {
+	int shouldExit = 0;
+	int skip = 0;
+	int givenFiles = 0;
+	for (int i = 1; i < argc; i++) {
+		char *arg = argv[i];
+		if (!skip && (strcmp(arg, "--help") == 0 || strcmp(arg, "-h") == 0)) {
+			printHelp(argv[0]);
+			shouldExit = 1;
+		} else if (!skip &&
+				   (strcmp(arg, "--version") == 0 || strcmp(arg, "-v") == 0)) {
+			printf("%s: Version 0.0.1-Beta\n", argv[0]);
+			shouldExit = 1;
+		} else if (strcmp(arg, "--") == 0) {
+			skip = 1;
+		} else if (!skip && memcmp(arg, "--in=", strlen("--in=")) == 0) {
+			givenFiles++;
+		} else if (!skip && memcmp(arg, "--out=", strlen("--out=")) == 0) {
+			givenFiles++;
+		} else if (!skip && memcmp(arg, "--key=", strlen("--key=")) == 0) {
+			givenFiles++;
+		} else if (skip) { // Unconditionally add files after --
+			givenFiles++;
+		} else if (!skip &&
+				   arg[0] !=
+					   '-') { // Add a file, if the file doesn't start with '-'.
+			givenFiles++;
+		} else if (!skip && strcmp(arg, "--memory") == 0) {
+			// Nothing
+		} else {
+			printf("Unknown option: %s\n", arg);
+		}
+	} // Finished 1. pass of parsing the options
+	if (shouldExit)
+		exit(0);
+	int status = 0;
+	for (int i = 1; i < argc; i++) {
+		char *arg = argv[i];
+		if (arg == NULL) {
+			break;
+		}
+		if (!skip && (strcmp(arg, "--help") == 0 || strcmp(arg, "-h") == 0)) {
+			// Nothing
+			continue;
+		} else if (!skip &&
+				   (strcmp(arg, "--version") == 0 || strcmp(arg, "-v") == 0)) {
+			// Nothing
+			continue;
+		} else if (strcmp(arg, "--") == 0) {
+			// Nothing
+			continue;
+		} else if (!skip && memcmp(arg, "--in=", strlen("--in=")) == 0) {
+			if (status == 0) {
+				arguments->inFile = &arg[4];
+				status++;
+			} else if (status != 0 && arguments->inFile != NULL) {
+				fprintf(stderr, "Overwriting input file: %s. (Now %s)\n",
+						arguments->inFile, &arg[4]);
+				arguments->inFile = &arg[4];
+			} else {
+				arguments->inFile = &arg[4];
+			}
+		} else if (!skip && memcmp(arg, "--out=", strlen("--out=")) == 0) {
+			if (status == 1) {
+				arguments->outFile = &arg[5];
+				status++;
+			} else if (status != 1 && arguments->outFile != NULL) {
+				fprintf(stderr, "Overwriting output file: %s. (Now %s)\n",
+						arguments->outFile, &arg[5]);
+				arguments->outFile = &arg[5];
+			} else {
+				arguments->outFile = &arg[5];
+			}
+		} else if (!skip && memcmp(arg, "--key=", strlen("--key=")) == 0) {
+			if (status == 2) {
+				arguments->keyFile = &arg[5];
+				status++;
+			} else if (status != 2 && arguments->keyFile != NULL) {
+				fprintf(stderr, "Overwriting keyfile: %s. (Now %s)\n",
+						arguments->keyFile, &arg[5]);
+				arguments->keyFile = &arg[5];
+			} else {
+				arguments->keyFile = &arg[5];
+			}
+		} else if (!skip && arg[0] != '-') {
+			switch (status) {
+				case 0:
+					if (arguments->inFile != NULL) {
+						fprintf(stderr,
+								"Overwriting input file: %s. (Now %s)\n",
+								arguments->inFile, arg);
+					}
+					arguments->inFile = arg;
+					break;
+				case 1:
+					if (arguments->outFile != NULL) {
+						fprintf(stderr,
+								"Overwriting output file: %s. (Now %s)\n",
+								arguments->outFile, arg);
+					}
+					arguments->outFile = arg;
+					break;
+				case 2:
+					if (arguments->keyFile != NULL) {
+						fprintf(stderr, "Overwriting keyfile: %s. (Now %s)\n",
+								arguments->keyFile, arg);
+					}
+					arguments->keyFile = arg;
+					break;
+				default:
+					fprintf(stderr, "Don't know, what to do with %s!\n", arg);
+					break;
+			}
+			status++;
+		} else if (skip) {
+			switch (status) {
+				case 0:
+					if (arguments->inFile != NULL) {
+						fprintf(stderr,
+								"Overwriting input file: %s. (Now %s)\n",
+								arguments->inFile, &arg[4]);
+					}
+					arguments->inFile = arg;
+					break;
+				case 1:
+					if (arguments->outFile != NULL) {
+						fprintf(stderr,
+								"Overwriting output file: %s. (Now %s)\n",
+								arguments->outFile, &arg[5]);
+					}
+					arguments->outFile = arg;
+					break;
+				case 2:
+					if (arguments->keyFile != NULL) {
+						fprintf(stderr, "Overwriting keyfile: %s. (Now %s)\n",
+								arguments->keyFile, &arg[5]);
+					}
+					arguments->keyFile = arg;
+					break;
+				default:
+					fprintf(stderr, "Don't know, what to do with %s!\n", arg);
+					break;
+			}
+			status++;
+		}
+	}
+	if (arguments->keyFile == NULL)
+		arguments->keyFile = "key.key";
+	if (arguments->outFile == NULL || arguments->inFile == NULL) {
+		fprintf(stderr, "Didn\'t give enough arguments!\n");
+		exit(-1);
+	}
+}
+static void printHelp(char *this) {
+	puts(this);
+	printf("Usage: %s <optionsOrFiles> \n", this);
+	puts("--version -v Print version");
+	puts("--help    -h Print this help");
+	puts("--in         Set the input file");
+	puts("--out        Set the output file");
+	puts("--key        Set the key file. (Default key.key)");
 }

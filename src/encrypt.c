@@ -1,7 +1,10 @@
+#include <assert.h>
+#include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -11,34 +14,37 @@
 uint64_t encrypt(uint64_t v, uint64_t lastValue, Key k);
 
 int main(int argc, char **argv) {
-	if (argc < 3) {
-		printf("%s <infile> <outfile> [<keyfile>(default key.key)]\n", argv[0]);
-		return -1;
-	}
-	FILE *toEncrypt = fopen(argv[1], "rb");
+	Arguments *arguments = calloc(1, sizeof(Arguments));
+	assert(arguments);
+	evalArguments(argc, argv, arguments);
+	FILE *toEncrypt = fopen(arguments->inFile, "rb");
 	if (toEncrypt == NULL) {
-		fprintf(stderr, "Couldn\'t open %s\n", argv[1]);
+		fprintf(stderr, "Couldn\'t open input file %s\n", arguments->inFile);
+		free(arguments);
 		return EXIT_FAILURE;
 	}
-	FILE *encrypted = fopen(argv[2], "wb");
+	FILE *encrypted = fopen(arguments->outFile, "wb");
 	if (encrypted == NULL) {
-		fprintf(stderr, "Couldn\'t open %s\n", argv[2]);
+		fprintf(stderr, "Couldn\'t open output file %s\n", arguments->outFile);
+		free(arguments);
 		fclose(toEncrypt);
 		return EXIT_FAILURE;
 	}
-	Key key = readKey(argv[3] == NULL ? "key.key" : argv[3]);
+	Key key = readKey(arguments->keyFile);
 	if (key == NULL) {
-		fprintf(stderr, "Couldn\'t load key!\n");
+		fprintf(stderr, "Couldn\'t load key %s\n", arguments->keyFile);
+		free(arguments);
 		fclose(toEncrypt);
 		fclose(encrypted);
 		return EXIT_FAILURE;
 	}
-	fputc(0, encrypted); // How many padded zeroes?
+	fputc(0, encrypted); // How many padded zeroes? Will be filled later.
 	int paddedZeroes = 0;
 	uint64_t cnt = 0;
 	uint64_t lastValue = 0;
 	for (int i = 0; i < 7; i++)
 		fputc(rand() & 0xFF, encrypted); // Padding to 8
+	int index=0;
 	while (1) {
 		char rawBytes[8];
 		int readBytes = fread(rawBytes, 1, 8, toEncrypt);
@@ -50,20 +56,25 @@ int main(int argc, char **argv) {
 			paddedZeroes = 8 - readBytes;
 		}
 		uint64_t read = *((uint64_t *)rawBytes);
+		read^=key->hash[index++];
+		if(index==8){
+			index=0;
+		}
 		uint64_t encryptedInt =
 			encrypt(read, cnt == 0 ? key->firstValue : lastValue, key);
 		fwrite(&encryptedInt, 8, 1, encrypted);
 		cnt++;
 		lastValue = encryptedInt;
-		memset(rawBytes, 0, 8);
 	}
 	rewind(encrypted);
 	fputc(paddedZeroes, encrypted);
 	releaseKey(key);
 	fclose(toEncrypt);
 	fclose(encrypted);
-	return 0;
+	free(arguments);
+	return EXIT_SUCCESS;
 }
+
 uint64_t encrypt(uint64_t v, uint64_t lastValue, Key k) {
 	uint64_t start = v;
 	start ^= k->xorValue;

@@ -6,10 +6,10 @@ all:
 	$(CC) $(CFLAGS) -fanalyzer -march=native -O3 -s -I"include" -c -o bin/obj/shared.o src/shared.c
 	$(CC) $(CFLAGS) -fanalyzer -march=native -O3 -s -I"include" -c -o bin/obj/keygen.o src/keygen.c
 	$(CC) $(CFLAGS) -fanalyzer -march=native -O3 -s -I"include" -c -o bin/obj/keydump.o src/keydump.c
-	$(CC) -o bin/encrypt bin/obj/encrypt.o bin/obj/shared.o $(LIBS)
-	$(CC) -o bin/decrypt bin/obj/decrypt.o bin/obj/shared.o $(LIBS)
-	$(CC) -o bin/keygen bin/obj/keygen.o bin/obj/shared.o $(LIBS)
-	$(CC) -o bin/keydump bin/obj/keydump.o bin/obj/shared.o $(LIBS)
+	$(CC) -o bin/encrypt bin/obj/encrypt.o bin/obj/shared.o $(LIBS) -lcrypto
+	$(CC) -o bin/decrypt bin/obj/decrypt.o bin/obj/shared.o $(LIBS) -lcrypto
+	$(CC) -o bin/keygen bin/obj/keygen.o bin/obj/shared.o $(LIBS) -lcrypto
+	$(CC) -o bin/keydump bin/obj/keydump.o bin/obj/shared.o $(LIBS) -lcrypto
 all-debug:
 	mkdir -p bin/obj
 	$(CC) $(CFLAGS) -g3 -I"include" -c -o bin/obj/encrypt.o src/encrypt.c
@@ -17,10 +17,10 @@ all-debug:
 	$(CC) $(CFLAGS) -g3 -I"include" -c -o bin/obj/shared.o src/shared.c
 	$(CC) $(CFLAGS) -g3 -I"include" -c -o bin/obj/keygen.o src/keygen.c
 	$(CC) $(CFLAGS) -g3 -I"include" -c -o bin/obj/keydump.o src/keydump.c
-	$(CC) -o bin/encrypt bin/obj/encrypt.o bin/obj/shared.o $(LIBS)
-	$(CC) -o bin/decrypt bin/obj/decrypt.o bin/obj/shared.o $(LIBS)
-	$(CC) -o bin/keygen bin/obj/keygen.o bin/obj/shared.o $(LIBS)
-	$(CC) -o bin/keydump bin/obj/keydump.o bin/obj/shared.o $(LIBS)
+	$(CC) -o bin/encrypt bin/obj/encrypt.o bin/obj/shared.o $(LIBS) -lcrypto
+	$(CC) -o bin/decrypt bin/obj/decrypt.o bin/obj/shared.o $(LIBS) -lcrypto
+	$(CC) -o bin/keygen bin/obj/keygen.o bin/obj/shared.o $(LIBS) -lcrypto
+	$(CC) -o bin/keydump bin/obj/keydump.o bin/obj/shared.o $(LIBS) -lcrypto
 clean:
 	rm -rf bin
 install: all

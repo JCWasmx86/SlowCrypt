@@ -1,5 +1,5 @@
+#include <openssl/sha.h>
 #include <stdint.h>
-
 #ifndef _SHARED_H
 #define _SHARED_H
 
@@ -21,8 +21,15 @@ typedef struct _key {
 	uint16_t howManyBitSets; // How many bits will be toggled from state?
 	uint64_t startXorValue;	 // Start for state+howManyXors
 	uint16_t howManyAdds;	 // How many random numbers will be added?
+	uint64_t hash[SHA512_DIGEST_LENGTH /
+				  8]; // Divided by 8, as the length is for the number of bytes.
 } * Key;
 
+typedef struct _args {
+	char *inFile;
+	char *outFile;
+	char *keyFile;
+} Arguments;
 uint64_t rotate(uint64_t v, int n);
 Key readKey(char *name);
 void releaseKey(Key key);
@@ -30,4 +37,5 @@ uint64_t xorshift(XorShift state);
 uint64_t reverse(uint64_t x);
 uint64_t reinterpret(int64_t i);
 uint64_t generate64BitValue(void);
+void evalArguments(int argc, char **argv, Arguments *arguments);
 #endif
