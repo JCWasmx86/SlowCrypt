@@ -12,6 +12,8 @@ After that multiple transformations are applied to each block. (See [here](src/e
 1. Execute keygen to generate a key: `keygen`
 2. Use encrypt to encrypt the file: `encrypt <inputFile> <outputFile> <keyFile>`
 3. Use decrypt to decrypt the file: `decrypt <inputFile> <outputFile> <keyFile>`
+
+
 If you don't  give a keyfile to `encrypt` or `decrypt`, `key.key` is assumed implicitly.
 # TODO
 - [ ] Improve performance
