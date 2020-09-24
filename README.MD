@@ -17,7 +17,7 @@ After that multiple transformations are applied to each block. (See [here](src/e
 If you don't  give a keyfile to `encrypt` or `decrypt`, `key.key` is assumed implicitly.
 # TODO
 - [ ] Improve performance
-- [ ] Add the possibility of generating a key from a password
+- [x] Add the possibility of generating a key from a password
 - [ ] Improve documentation
 
 # Disclaimer
