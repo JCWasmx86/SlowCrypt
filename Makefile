@@ -25,6 +25,19 @@ all-debug:
 	$(CC) -o bin/keygen bin/obj/keygen.o bin/obj/shared.o $(LIBS) -lcrypto
 	$(CC) -o bin/keydump bin/obj/keydump.o bin/obj/shared.o $(LIBS) -lcrypto
 	$(CC) -o bin/pwd2key bin/obj/pwd2key.o bin/obj/shared.o $(LIBS) -lcrypto
+all-noassert:
+	mkdir -p bin/obj
+	$(CC) $(CFLAGS) -DNDEBUG -fanalyzer -march=native -O3 -s -I"include" -c -o bin/obj/encrypt.o src/encrypt.c
+	$(CC) $(CFLAGS) -DNDEBUG -fanalyzer -march=native -O3 -s -I"include" -c -o bin/obj/decrypt.o src/decrypt.c
+	$(CC) $(CFLAGS) -DNDEBUG -fanalyzer -march=native -O3 -s -I"include" -c -o bin/obj/shared.o src/shared.c
+	$(CC) $(CFLAGS) -DNDEBUG -fanalyzer -march=native -O3 -s -I"include" -c -o bin/obj/keygen.o src/keygen.c
+	$(CC) $(CFLAGS) -DNDEBUG -fanalyzer -march=native -O3 -s -I"include" -c -o bin/obj/keydump.o src/keydump.c
+	$(CC) $(CFLAGS) -DNDEBUG -fanalyzer -march=native -O3 -s -I"include" -c -o bin/obj/pwd2key.o src/pwd2key.c
+	$(CC) -o bin/encrypt bin/obj/encrypt.o bin/obj/shared.o $(LIBS) -lcrypto
+	$(CC) -o bin/decrypt bin/obj/decrypt.o bin/obj/shared.o $(LIBS) -lcrypto
+	$(CC) -o bin/keygen bin/obj/keygen.o bin/obj/shared.o $(LIBS) -lcrypto
+	$(CC) -o bin/keydump bin/obj/keydump.o bin/obj/shared.o $(LIBS) -lcrypto
+	$(CC) -o bin/pwd2key bin/obj/pwd2key.o bin/obj/shared.o $(LIBS) -lcrypto
 clean:
 	rm -rf bin
 install: all
