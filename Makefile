@@ -1,4 +1,7 @@
 CFLAGS+=-Wall -Wextra -pedantic -Wno-unused-parameter
+ifndef PREFIX
+export PREFIX=/usr/local
+endif
 all:
 	mkdir -p bin/obj
 	$(CC) $(CFLAGS) -fanalyzer -march=native -O3 -s -I"include" -c -o bin/obj/encrypt.o src/encrypt.c
@@ -41,10 +44,10 @@ all-noassert:
 clean:
 	rm -rf bin
 install: all
-	cp bin/encrypt $PREFIX/bin/encrypt
-	cp bin/decrypt $PREFIX/bin/decrypt
-	cp bin/keygen $PREFIX/bin/keygen
-	cp bin/keydump $PREFIX/bin/keydump
-	cp bin/pwd2key $PREFIX/bin/pwd2key
+	cp bin/encrypt $(PREFIX)/bin/encrypt
+	cp bin/decrypt $(PREFIX)/bin/decrypt
+	cp bin/keygen $(PREFIX)/bin/keygen
+	cp bin/keydump $(PREFIX)/bin/keydump
+	cp bin/pwd2key $(PREFIX)/bin/pwd2key
 format:
 	find src include -iname *.h -o -iname *.c | xargs clang-format --style=file -verbose -i

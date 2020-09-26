@@ -16,10 +16,24 @@ After that multiple transformations are applied to each block. (See [here](src/e
 
 If you don't  give a keyfile to `encrypt` or `decrypt`, `key.key` is assumed implicitly.
 # TODO
-- [ ] Improve performance
+- [x] Improve performance (Build with `make all-noassert`)
 - [x] Add the possibility of generating a key from a password
 - [ ] Improve documentation
+- [ ] Replace asserts with better alternatives
 
+# Compiling
+## Prerequisites
+SlowCrypt uses [`OpenSSL`](https://github.com/openssl/openssl/blob/master/LICENSE.txt) (Apache 2.0 License) for some hash functions.
+Furthermore, at least `gcc` (Version 10 and upwards) is required for compiling.
+## Build
+- `make all` builds SlowCrypt with compiler optimizations and without debug infos.
+- `make all-debug` builds SlowCrypt for debugging.
+- `make all-noassert` is the same as `make all`, except `assert` is disabled.
+- `make clean` removes the `bin` directory.
+- `make format` formats the code.
+- `make install` installs the code into `$PREFIX` (Default: `/usr/local`)
+## Test
+Use the supplied test-script `test`.
 # Disclaimer
 Don't use this algorithm for encrypting important data.
 Anyone who has experience with cryptography, will probably break SlowCrypt in less than a weekend.
