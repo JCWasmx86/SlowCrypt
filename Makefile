@@ -49,5 +49,11 @@ install: all
 	cp bin/keygen $(PREFIX)/bin/keygen
 	cp bin/keydump $(PREFIX)/bin/keydump
 	cp bin/pwd2key $(PREFIX)/bin/pwd2key
+uninstall:
+	rm $(PREFIX)/bin/encrypt
+	rm $(PREFIX)/bin/decrypt
+	rm $(PREFIX)/bin/keygen
+	rm $(PREFIX)/bin/keydump
+	rm $(PREFIX)/bin/pwd2key
 format:
 	find src include -iname *.h -o -iname *.c | xargs clang-format --style=file -verbose -i
