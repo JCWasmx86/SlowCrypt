@@ -9,7 +9,7 @@ is not a multiple of 8.
 The plaintext is divided into blocks of 8-bytes, the last block may be padded with zeroes to have 8 bytes.
 After that multiple transformations are applied to each block. (See [here](src/encrypt.c))
 # Usage
-1. Execute keygen to generate a key: `keygen`
+1. Execute keygen to generate a key: `keygen` for a random key or `pwd2key` for creating a key from a password.
 2. Use encrypt to encrypt the file: `encrypt <inputFile> <outputFile> <keyFile>`
 3. Use decrypt to decrypt the file: `decrypt <inputFile> <outputFile> <keyFile>`
 
