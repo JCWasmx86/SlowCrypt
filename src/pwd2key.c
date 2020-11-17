@@ -71,7 +71,7 @@ void generateKey(unsigned char *digest, char *keyName) {
 	int8_t shiftValue = digest[0] % 64 * (digest[1] & 1 ? -1 : 1); // 18 bytes
 	fwrite(&shiftValue, 1, 1, fp);
 	digest += 2;
-	uint64_t firstValue = *((uint64_t *)digest); // 24 bytes bytes
+	uint64_t firstValue = *((uint64_t *)digest); // 24 bytes
 	digest += 8;
 	fwrite(&firstValue, 8, 1, fp);
 	for (int i = 0; i < 3; i++) {
