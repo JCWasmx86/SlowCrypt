@@ -19,8 +19,9 @@ char *evalArgumentsForPwd2key(int argc, char **argv);
 
 void hash(const char *password, const unsigned char *salt, int32_t iterations,
 		  uint32_t outputBytes, unsigned char *digest) {
-	assert(PKCS5_PBKDF2_HMAC(password, strlen(password), salt, SALT_LENGTH,
-							 iterations, EVP_sha512(), outputBytes, digest));
+	int ret = PKCS5_PBKDF2_HMAC(password, strlen(password), salt, SALT_LENGTH,
+								iterations, EVP_sha512(), outputBytes, digest);
+	assert(ret);
 }
 
 // Based on https://stackoverflow.com/a/6869218
@@ -33,7 +34,8 @@ ssize_t getpassword(char **lineptr, size_t *n, FILE *stream) {
 	if (tcsetattr(fileno(stream), TCSAFLUSH, &new) != 0)
 		return -1;
 	int nread = getline(lineptr, n, stream);
-	assert(tcsetattr(fileno(stream), TCSAFLUSH, &old) == 0);
+	int ret = tcsetattr(fileno(stream), TCSAFLUSH, &old);
+	assert(ret);
 	return nread;
 }
 
@@ -42,7 +44,8 @@ int main(int argc, char **argv) {
 	char *password = NULL; // Initialized by getpassword
 	size_t lengthOfPassword = 0;
 	puts("Please enter your password:");
-	assert(getpassword(&password, &lengthOfPassword, stdin) != -1);
+	int status = getpassword(&password, &lengthOfPassword, stdin);
+	assert(status != -1);
 	printf("Generating keyfile: %s\n", keyName);
 	unsigned char *digest = malloc(HASH_LENGTH);
 	assert(digest);

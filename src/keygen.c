@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 	uint64_t sX = generate64BitValue();
 	fwrite(&sX, 1, 8, fp);
 	uint16_t howManyAdds = random() & 0xFFFF;
-	fwrite(&howManyAdds, 2, 1, fp);
+	fwrite(&howManyAdds, 1, 2, fp);
 	fclose(fp);
 	return 0;
 }

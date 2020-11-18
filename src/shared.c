@@ -18,17 +18,25 @@ Key readKey(char *name) {
 	}
 	Key key = calloc(1, sizeof(struct _key));
 	assert(key != NULL);
-	assert(fread(&key->xorValue, 1, 8, fp) == 8);
-	assert(fread(&key->addValue, 1, 8, fp) == 8);
-	assert(fread(&key->shiftValue, 1, 1, fp) == 1);
-	assert(fread(&key->firstValue, 1, 8, fp) == 8);
+	size_t status = fread(&key->xorValue, 1, 8, fp);
+	assert(status == 8);
+	status = fread(&key->addValue, 1, 8, fp);
+	assert(status == 8);
+	status = fread(&key->shiftValue, 1, 1, fp);
+	assert(status == 1);
+	status = fread(&key->firstValue, 1, 8, fp);
+	assert(status == 8);
 	key->state = readXorShift(fp);
 	key->xorState = readXorShift(fp);
 	key->addState = readXorShift(fp);
-	assert(fread(&key->howManyXors, 1, 1, fp) == 1);
-	assert(fread(&key->howManyBitSets, 1, 2, fp) == 2);
-	assert(fread(&key->startXorValue, 1, 8, fp) == 8);
-	assert(fread(&key->howManyAdds, 1, 2, fp) == 2);
+	status = fread(&key->howManyXors, 1, 1, fp);
+	assert(status == 1);
+	status = fread(&key->howManyBitSets, 1, 2, fp);
+	assert(status == 2);
+	status = fread(&key->startXorValue, 1, 8, fp);
+	assert(status == 8);
+	status = fread(&key->howManyAdds, 1, 2, fp);
+	assert(status == 2);
 	rewind(fp);
 	int fd = fileno(fp);
 	struct stat buf;
@@ -36,7 +44,8 @@ Key readKey(char *name) {
 	off_t size = buf.st_size;
 	void *buffer = malloc(size);
 	assert(buffer);
-	assert(fread(buffer, 1, size, fp) == (size_t)size);
+	status = fread(buffer, 1, size, fp);
+	assert(status == (size_t)size);
 	SHA512(buffer, size, (unsigned char *)key->hash);
 	free(buffer);
 	fclose(fp);
@@ -64,12 +73,16 @@ uint64_t reverse(uint64_t x) {
 static XorShift readXorShift(FILE *fp) {
 	XorShift xs = calloc(1, sizeof(struct _xorShift));
 	assert(xs);
-	assert(fread(&xs->maxSize, 1, 8, fp) == 8);
+	size_t status = fread(&xs->maxSize, 1, 8, fp);
+	assert(status == 8);
 	xs->state = malloc(8 * xs->maxSize);
 	assert(xs->state);
-	for (uint64_t i = 0; i < xs->maxSize; i++)
-		assert(fread(&xs->state[i], 1, 8, fp) == 8);
-	assert(fread(&xs->index, 1, 8, fp) == 8);
+	for (uint64_t i = 0; i < xs->maxSize; i++) {
+		status = fread(&xs->state[i], 1, 8, fp);
+		assert(status == 8);
+	}
+	status = fread(&xs->index, 1, 8, fp);
+	assert(status == 8);
 	return xs;
 }
 uint64_t xorshift(XorShift state) {
@@ -184,6 +197,8 @@ void evalArguments(int argc, char **argv, Arguments *arguments) {
 			} else {
 				arguments->keyFile = &arg[5];
 			}
+		} else if (!skip && memcmp(arg, "--memory", strlen("--memory")) == 0) {
+			arguments->useMemory = 1;
 		} else if (!skip && arg[0] != '-') {
 			switch (status) {
 				case 0:
@@ -261,4 +276,5 @@ static void printHelp(char *this) {
 	puts("--in         Set the input file");
 	puts("--out        Set the output file");
 	puts("--key        Set the key file. (Default key.key)");
+	puts("--memory	   Encrypt/decrypt in memory (Leads to more memory usage");
 }

@@ -29,6 +29,7 @@ typedef struct _args {
 	char *inFile;
 	char *outFile;
 	char *keyFile;
+	int useMemory;
 } Arguments;
 uint64_t rotate(uint64_t v, int n);
 Key readKey(char *name);
