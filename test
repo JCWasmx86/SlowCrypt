@@ -8,9 +8,10 @@ for v in {0..100}
 do
 	./keygen
 	./encrypt $v.txt $v.txt.enc key.key
-	./decrypt $v.txt.enc_m $v.txt.dec key.key
-	./encrypt --memory $v.txt $v.txt.enc_m key.key
-	./decrypt $v.txt.enc_m $v.txt.dec key.key
+	./decrypt $v.txt.enc $v.txt.dec key.key
+	diff $v.txt $v.txt.dec
+	./encrypt --memory $v.txt $v.txt.enc key.key
+	./decrypt $v.txt.enc $v.txt.dec key.key
 	diff $v.txt $v.txt.dec
 	echo $v
 done
