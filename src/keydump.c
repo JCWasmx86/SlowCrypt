@@ -51,6 +51,11 @@ static void printKey(char *filename) {
 	printf("howManyBitSets: %" PRIu16 "\n", key->howManyBitSets);
 	printf("addValue: %" PRIu64 "\n", key->startXorValue);
 	printf("howManyAdds: %" PRIu16 "\n", key->howManyAdds);
+	printf("SHA-512: ");
+	for (int i = 0; i < 8; i++) {
+		printf("%" PRIu64, key->hash[i]);
+	}
+	printf("\n");
 	releaseKey(key);
 }
 static void dumpXorShift(XorShift shift) {

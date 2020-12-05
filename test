@@ -7,12 +7,20 @@ done
 for v in {0..100}
 do
 	./keygen
+	echo Testing with I/O encryption/decryption
 	./encrypt $v.txt $v.txt.enc key.key
 	./decrypt $v.txt.enc $v.txt.dec key.key
 	diff $v.txt $v.txt.dec
+	echo Testing with in-memory encryption/decryption
+	./encrypt --memory $v.txt $v.txt.enc key.key
+	./decrypt --memory $v.txt.enc $v.txt.dec key.key
+	diff $v.txt $v.txt.dec
+	echo Testing with in-memory encryption and I/O decryption
 	./encrypt --memory $v.txt $v.txt.enc key.key
 	./decrypt $v.txt.enc $v.txt.dec key.key
-	diff $v.txt $v.txt.dec
+	echo Testing with I/O encryption and in-memory decryption
+	./encrypt --memory $v.txt $v.txt.enc key.key
+	./decrypt $v.txt.enc $v.txt.dec key.key
 	echo $v
 done
 cd ..

@@ -43,7 +43,7 @@ all-noassert:
 	$(CC) -o bin/pwd2key bin/obj/pwd2key.o bin/obj/shared.o $(LIBS) -lcrypto
 clean:
 	rm -rf bin
-install: all
+install: all-noassert
 	cp bin/encrypt $(PREFIX)/bin/encrypt
 	cp bin/decrypt $(PREFIX)/bin/decrypt
 	cp bin/keygen $(PREFIX)/bin/keygen

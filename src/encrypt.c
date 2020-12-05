@@ -40,8 +40,8 @@ int main(int argc, char **argv) {
 		fclose(encrypted);
 		return EXIT_FAILURE;
 	}
-	// How many padded zeroes? Will be filled later.
 	if (!arguments->useMemory) {
+		// How many padded zeroes? Will be filled later.
 		fputc(0, encrypted);
 		int paddedZeroes = 0;
 		uint64_t cnt = 0;
