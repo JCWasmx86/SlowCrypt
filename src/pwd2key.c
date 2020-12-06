@@ -6,7 +6,6 @@
 #include <termios.h>
 
 #define MAX_PASSWORD_LENGTH 1024
-#define HASH_LENGTH (87 + sizeof(unsigned int))
 #define SALT "slowcrypt"
 #define SALT_LENGTH strlen(SALT)
 #define NUM_ITERATIONS 1048576
@@ -34,8 +33,7 @@ ssize_t getpassword(char **lineptr, size_t *n, FILE *stream) {
 	if (tcsetattr(fileno(stream), TCSAFLUSH, &new) != 0)
 		return -1;
 	int nread = getline(lineptr, n, stream);
-	int ret = tcsetattr(fileno(stream), TCSAFLUSH, &old);
-	assert(ret);
+	tcsetattr(fileno(stream), TCSAFLUSH, &old);
 	return nread;
 }
 
@@ -116,7 +114,7 @@ char *evalArgumentsForPwd2key(int argc, char **argv) {
 			printf("%s <options>* outputFile?\n", argv[0]);
 			puts("--help, -h    Print this help");
 			puts("--version, -v Print the version");
-			puts("If no outputFile is given, key.key is assumed silently.");
+			puts("If no outputFile is given, key.key is implied.");
 			shouldExit = 1;
 		} else if (strcmp(arg, "--version") == 0 || strcmp(arg, "-v") == 0) {
 			printf("%s: Version 0.0.1-Beta\n", argv[0]);

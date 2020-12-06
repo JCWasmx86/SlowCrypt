@@ -9,7 +9,6 @@
 
 #include "shared.h"
 
-uint64_t decrypt(uint64_t v, uint64_t lastValue, Key k);
 static void decryptInMemory(Key key, FILE *toDecrypt, FILE *decrypted);
 static void *readIntoBuffer(FILE *fp, uint64_t *size);
 
@@ -83,31 +82,6 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
-uint64_t decrypt(uint64_t v, uint64_t lastValue, Key k) {
-	uint64_t start = reverse(v);
-	uint64_t generatedRandomNumber = k->startXorValue;
-	for (int i = 0; i < k->howManyBitSets; i++) {
-		uint8_t toggle = !!xorshift(k->state);
-		uint64_t i = xorshift(k->state) % 64;
-		if (toggle) {
-			generatedRandomNumber ^= (1L << i);
-		}
-	}
-	uint64_t tmp = 0;
-	for (uint16_t i = 0; i < k->howManyAdds; i++)
-		tmp += xorshift(k->addState);
-	uint64_t tmp2 = 0;
-	for (uint16_t i = 0; i < k->howManyXors; i++)
-		tmp2 ^= xorshift(k->xorState);
-	start ^= lastValue;
-	start ^= tmp2;
-	start -= tmp;
-	start ^= generatedRandomNumber;
-	start = rotate(start, -k->shiftValue);
-	start -= k->addValue;
-	start ^= k->xorValue;
-	return start;
-}
 static void decryptInMemory(Key key, FILE *toDecrypt, FILE *decrypted) {
 	uint64_t size = 0;
 	uint64_t *buffer = (uint64_t *)readIntoBuffer(toDecrypt, &size);

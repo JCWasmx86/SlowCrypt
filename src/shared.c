@@ -11,11 +11,16 @@
 
 static XorShift readXorShift(FILE *fp);
 static void printHelp(char *this);
+static Key _readKey(FILE* fp);
+
 Key readKey(char *name) {
 	FILE *fp = fopen(name, "rb");
 	if (fp == NULL) {
 		return NULL;
 	}
+	return _readKey(fp);
+}
+static Key _readKey(FILE* fp){
 	Key key = calloc(1, sizeof(struct _key));
 	assert(key != NULL);
 	size_t status = fread(&key->xorValue, 1, 8, fp);
@@ -276,5 +281,52 @@ static void printHelp(char *this) {
 	puts("--in         Set the input file");
 	puts("--out        Set the output file");
 	puts("--key        Set the key file. (Default key.key)");
-	puts("--memory	   Encrypt/decrypt in memory (Leads to more memory usage");
+	puts("--memory	   Encrypt/decrypt in memory (Leads to more a higher "
+		 "usage");
+}
+uint64_t encrypt(uint64_t v, uint64_t lastValue, Key k) {
+	uint64_t start = v;
+	start ^= k->xorValue;
+	start += k->addValue;
+	start = rotate(start, k->shiftValue);
+	uint64_t generatedRandomNumber = k->startXorValue;
+	for (int i = 0; i < k->howManyBitSets; i++) {
+		uint8_t toggle = !!xorshift(k->state);
+		uint64_t i = xorshift(k->state) % 64;
+		if (toggle) {
+			generatedRandomNumber ^= (1L << i);
+		}
+	}
+	start ^= generatedRandomNumber;
+	for (uint16_t i = 0; i < k->howManyAdds; i++)
+		start += xorshift(k->addState);
+	for (uint8_t i = 0; i < k->howManyXors; i++)
+		start ^= xorshift(k->xorState);
+	start ^= lastValue;
+	return reverse(start);
+}
+uint64_t decrypt(uint64_t v, uint64_t lastValue, Key k) {
+	uint64_t start = reverse(v);
+	uint64_t generatedRandomNumber = k->startXorValue;
+	for (int i = 0; i < k->howManyBitSets; i++) {
+		uint8_t toggle = !!xorshift(k->state);
+		uint64_t i = xorshift(k->state) % 64;
+		if (toggle) {
+			generatedRandomNumber ^= (1L << i);
+		}
+	}
+	uint64_t tmp = 0;
+	for (uint16_t i = 0; i < k->howManyAdds; i++)
+		tmp += xorshift(k->addState);
+	uint64_t tmp2 = 0;
+	for (uint16_t i = 0; i < k->howManyXors; i++)
+		tmp2 ^= xorshift(k->xorState);
+	start ^= lastValue;
+	start ^= tmp2;
+	start -= tmp;
+	start ^= generatedRandomNumber;
+	start = rotate(start, -k->shiftValue);
+	start -= k->addValue;
+	start ^= k->xorValue;
+	return start;
 }

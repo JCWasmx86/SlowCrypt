@@ -2,6 +2,7 @@
 #include <stdint.h>
 #ifndef _SHARED_H
 #define _SHARED_H
+#define HASH_LENGTH (87 + sizeof(unsigned int))
 
 typedef struct _xorShift {
 	uint64_t *state;
@@ -39,4 +40,6 @@ uint64_t reverse(uint64_t x);
 uint64_t reinterpret(int64_t i);
 uint64_t generate64BitValue(void);
 void evalArguments(int argc, char **argv, Arguments *arguments);
+uint64_t encrypt(uint64_t v, uint64_t lastValue, Key k);
+uint64_t decrypt(uint64_t v, uint64_t lastValue, Key k);
 #endif

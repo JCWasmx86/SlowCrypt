@@ -11,7 +11,6 @@
 
 #include "shared.h"
 
-static uint64_t encrypt(uint64_t v, uint64_t lastValue, Key k);
 static void encryptInMemory(Key key, FILE *toEncrypt, FILE *encrypted);
 static void *readIntoBuffer(FILE *fp, uint64_t *size, int *numZeroes);
 
@@ -153,25 +152,4 @@ static void *readIntoBuffer(FILE *fp, uint64_t *size, int *numZeroes) {
 	*numZeroes = cnt;
 	*size = readBytes;
 	return readBytes != 0 ? realloc(ret, readBytes) : ret;
-}
-static uint64_t encrypt(uint64_t v, uint64_t lastValue, Key k) {
-	uint64_t start = v;
-	start ^= k->xorValue;
-	start += k->addValue;
-	start = rotate(start, k->shiftValue);
-	uint64_t generatedRandomNumber = k->startXorValue;
-	for (int i = 0; i < k->howManyBitSets; i++) {
-		uint8_t toggle = !!xorshift(k->state);
-		uint64_t i = xorshift(k->state) % 64;
-		if (toggle) {
-			generatedRandomNumber ^= (1L << i);
-		}
-	}
-	start ^= generatedRandomNumber;
-	for (uint16_t i = 0; i < k->howManyAdds; i++)
-		start += xorshift(k->addState);
-	for (uint8_t i = 0; i < k->howManyXors; i++)
-		start ^= xorshift(k->xorState);
-	start ^= lastValue;
-	return reverse(start);
 }
