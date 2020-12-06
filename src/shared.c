@@ -11,7 +11,7 @@
 
 static XorShift readXorShift(FILE *fp);
 static void printHelp(char *this);
-static Key _readKey(FILE* fp);
+static Key _readKey(FILE *fp);
 
 Key readKey(char *name) {
 	FILE *fp = fopen(name, "rb");
@@ -20,7 +20,7 @@ Key readKey(char *name) {
 	}
 	return _readKey(fp);
 }
-static Key _readKey(FILE* fp){
+static Key _readKey(FILE *fp) {
 	Key key = calloc(1, sizeof(struct _key));
 	assert(key != NULL);
 	size_t status = fread(&key->xorValue, 1, 8, fp);
