@@ -1,5 +1,6 @@
 #include <openssl/sha.h>
 #include <stdint.h>
+#include <stdio.h>
 #ifndef _SHARED_H
 #define _SHARED_H
 #define HASH_LENGTH (87 + sizeof(unsigned int))
@@ -40,6 +41,8 @@ uint64_t reverse(uint64_t x);
 uint64_t reinterpret(int64_t i);
 uint64_t generate64BitValue(void);
 void evalArguments(int argc, char **argv, Arguments *arguments);
-uint64_t encrypt(uint64_t v, uint64_t lastValue, Key k);
-uint64_t decrypt(uint64_t v, uint64_t lastValue, Key k);
+int decrypt(FILE *toDecrypt, FILE *clearText, Key key);
+int encrypt(FILE *toEncrypt, FILE *encrypted, Key key);
+int encryptInMemory(FILE *toEncrypt, FILE *encrypted, Key key);
+int decryptInMemory(FILE *toDecrypt, FILE *decrypted, Key key);
 #endif
