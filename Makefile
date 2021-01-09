@@ -62,6 +62,7 @@ make-deb: all
 	echo Version: 0.0.1-Beta >> bin/debian/DEBIAN/control
 	echo Section: custom >> bin/debian/DEBIAN/control
 	echo Architecture: `dpkg --print-architecture`>> bin/debian/DEBIAN/control
+	echo Depends: libssl1.1>>bin/debian/DEBIAN/control
 	echo Maintainer: JCWasmx86 >> bin/debian/DEBIAN/control
 	echo Description: Slowcrypt tools >> bin/debian/DEBIAN/control
 	mkdir -p bin/debian/usr/bin
