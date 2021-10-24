@@ -1,5 +1,4 @@
 #include "shared.h"
-#include <assert.h>
 #include <math.h>
 #include <openssl/sha.h>
 #include <stdio.h>
@@ -15,6 +14,7 @@ static Key _readKey(FILE *fp);
 static uint64_t encrypt_(uint64_t v, uint64_t lastValue, Key k);
 static uint64_t decrypt_(uint64_t v, uint64_t lastValue, Key k);
 static void *readIntoBuffer(FILE *fp, uint64_t *size, int *numZeroes);
+
 Key readKey(char *name) {
 	FILE *fp = fopen(name, "rb");
 	if (fp == NULL) {
@@ -24,39 +24,81 @@ Key readKey(char *name) {
 }
 static Key _readKey(FILE *fp) {
 	Key key = calloc(1, sizeof(struct _key));
-	assert(key != NULL);
+	if (key == NULL) {
+		return NULL;
+	}
 	size_t status = fread(&key->xorValue, 1, 8, fp);
-	assert(status == 8);
+	if (status != 8)
+		goto end;
 	status = fread(&key->addValue, 1, 8, fp);
-	assert(status == 8);
+	if (status != 8)
+		goto end;
 	status = fread(&key->shiftValue, 1, 1, fp);
-	assert(status == 1);
+	if (status != 1)
+		goto end;
 	status = fread(&key->firstValue, 1, 8, fp);
-	assert(status == 8);
+	if (status != 8)
+		goto end;
 	key->state = readXorShift(fp);
+	if (!key->state) {
+		goto end;
+	}
 	key->xorState = readXorShift(fp);
+	if (!key->xorState) {
+		free(key->state->state);
+		free(key->state);
+		goto end;
+	}
 	key->addState = readXorShift(fp);
+	if (!key->addState) {
+		free(key->xorState->state);
+		free(key->state->state);
+		free(key->state);
+		free(key->xorState);
+		goto end;
+	}
 	status = fread(&key->howManyXors, 1, 1, fp);
-	assert(status == 1);
+	if (status != 1)
+		goto end2;
 	status = fread(&key->howManyBitSets, 1, 2, fp);
-	assert(status == 2);
+	if (status != 2)
+		goto end2;
 	status = fread(&key->startXorValue, 1, 8, fp);
-	assert(status == 8);
+	if (status != 8)
+		goto end2;
 	status = fread(&key->howManyAdds, 1, 2, fp);
-	assert(status == 2);
+	if (status != 2)
+		goto end2;
 	rewind(fp);
 	int fd = fileno(fp);
 	struct stat buf;
-	fstat(fd, &buf);
+	int retValue = fstat(fd, &buf);
+	if (retValue == -1)
+		goto end2;
 	off_t size = buf.st_size;
 	void *buffer = malloc(size);
-	assert(buffer);
+	if (buffer == NULL)
+		goto end2;
 	status = fread(buffer, 1, size, fp);
-	assert(status == (size_t)size);
+	if (status != (off_t)size)
+		goto end3;
 	SHA512(buffer, size, (unsigned char *)key->hash);
 	free(buffer);
 	fclose(fp);
 	return key;
+end3:
+	free(buffer);
+end2:
+	free(key->xorState->state);
+	free(key->addState->state);
+	free(key->state->state);
+	free(key->state);
+	free(key->xorState);
+	free(key->addState);
+end:
+	free(key);
+	fclose(fp);
+	return NULL;
 }
 void releaseKey(Key key) {
 	if (!key) {
@@ -79,19 +121,32 @@ uint64_t reverse(uint64_t x) {
 }
 static XorShift readXorShift(FILE *fp) {
 	XorShift xs = calloc(1, sizeof(struct _xorShift));
-	assert(xs);
+	if (!xs)
+		return NULL;
 	size_t status = fread(&xs->maxSize, 1, 8, fp);
-	assert(status == 8);
+	if (status != 8)
+		goto end;
 	xs->state = malloc(8 * xs->maxSize);
-	assert(xs->state);
+	if (!xs->state)
+		goto end;
 	for (uint64_t i = 0; i < xs->maxSize; i++) {
 		status = fread(&xs->state[i], 1, 8, fp);
-		assert(status == 8);
+		if (status != 8) {
+			free(xs->state);
+			goto end;
+		}
 	}
 	status = fread(&xs->index, 1, 8, fp);
-	assert(status == 8);
+	if (status != 8) {
+		free(xs->state);
+		goto end;
+	}
 	return xs;
+end:
+	free(xs);
+	return NULL;
 }
+
 uint64_t xorshift(XorShift state) {
 	uint64_t index = state->index;
 	if (index >= state->maxSize) {
@@ -417,12 +472,16 @@ int encryptInMemory(FILE *toEncrypt, FILE *encrypted, Key key) {
 	int paddedZeroes = 0;
 	uint64_t *buffer =
 		(uint64_t *)readIntoBuffer(toEncrypt, &size, &paddedZeroes);
+	if (!buffer)
+		return 1;
 	uint64_t *backupBuffer = buffer;
-	assert(buffer);
 	uint64_t numberOfBlocks = size / 8;
 	size += 8; // For the first leading 8 bytes
 	uint8_t *bufferToWriteTo = calloc(size, 1);
-	assert(bufferToWriteTo);
+	if (!bufferToWriteTo) {
+		free(buffer);
+		return 1;
+	}
 	uint8_t *base = bufferToWriteTo;
 	*bufferToWriteTo = paddedZeroes;
 	bufferToWriteTo++;
@@ -453,7 +512,9 @@ int encryptInMemory(FILE *toEncrypt, FILE *encrypted, Key key) {
 		lastValue = encryptedInt;
 	}
 	size_t num = fwrite(base, 1, (numberOfBlocks * 8 + 8), encrypted);
-	assert((numberOfBlocks * 8 + 8) == num);
+	if (num != (numberOfBlocks * 8 + 8)) {
+		return 1;
+	}
 	fflush(encrypted);
 	free(base);
 	free(backupBuffer);
@@ -466,14 +527,18 @@ int decryptInMemory(FILE *toDecrypt, FILE *decrypted, Key key) {
 	uint64_t size = 0;
 	int nZ = 0;
 	uint64_t *buffer = (uint64_t *)readIntoBuffer(toDecrypt, &size, &nZ);
-	if (nZ != 0) {
+	if (!buffer)
+		return 1;
+	else if (nZ != 0) {
 		free(buffer);
 		return 1;
 	}
 	uint64_t *backupBuffer = buffer;
-	assert(buffer);
 	uint8_t *bufferToWriteTo = calloc(size, 1);
-	assert(bufferToWriteTo);
+	if (!bufferToWriteTo) {
+		free(buffer);
+		return 1;
+	}
 	uint8_t paddedZeroes = ((uint8_t *)buffer)[0];
 	buffer++; // Skip 8-byte header.
 	uint64_t cnt = 0;
@@ -505,10 +570,11 @@ int decryptInMemory(FILE *toDecrypt, FILE *decrypted, Key key) {
 		}
 		cnt++;
 	}
-	fwrite(bufferToWriteTo, 1, (cnt - 1) * 8 + (8 - paddedZeroes), decrypted);
+	size_t toWrite = (cnt - 1) * 8 + (8 - paddedZeroes);
+	size_t num = fwrite(bufferToWriteTo, 1, toWrite, decrypted);
 	free(bufferToWriteTo);
 	free(backupBuffer);
-	return 0;
+	return num != toWrite;
 }
 static void *readIntoBuffer(FILE *fp, uint64_t *size, int *numZeroes) {
 	uint8_t *ret = malloc(32 * 1024);
@@ -523,7 +589,10 @@ static void *readIntoBuffer(FILE *fp, uint64_t *size, int *numZeroes) {
 		if (currSize == readBytes) {
 			void *ptr = realloc(ret, currSize * 2);
 			currSize *= 2;
-			assert(ptr);
+			if (!ptr) {
+				free(ret);
+				return NULL;
+			}
 			ret = ptr;
 		}
 	}
@@ -534,5 +603,6 @@ static void *readIntoBuffer(FILE *fp, uint64_t *size, int *numZeroes) {
 	}
 	*numZeroes = cnt;
 	*size = readBytes;
+	readBytes += 8;
 	return readBytes != 0 ? realloc(ret, readBytes) : ret;
 }

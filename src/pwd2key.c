@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <openssl/evp.h>
 #include <shared.h>
 #include <stdio.h>
@@ -12,15 +11,14 @@
 
 ssize_t getpassword(char **lineptr, size_t *n, FILE *stream);
 void generateKey(unsigned char *digest, char *outputFile);
-void hash(const char *password, const unsigned char *salt, int32_t iterations,
-		  uint32_t outputBytes, unsigned char *digest);
+int hash(const char *password, const unsigned char *salt, int32_t iterations,
+		 uint32_t outputBytes, unsigned char *digest);
 char *evalArgumentsForPwd2key(int argc, char **argv);
 
-void hash(const char *password, const unsigned char *salt, int32_t iterations,
-		  uint32_t outputBytes, unsigned char *digest) {
-	int ret = PKCS5_PBKDF2_HMAC(password, strlen(password), salt, SALT_LENGTH,
-								iterations, EVP_sha512(), outputBytes, digest);
-	assert(ret);
+int hash(const char *password, const unsigned char *salt, int32_t iterations,
+		 uint32_t outputBytes, unsigned char *digest) {
+	return PKCS5_PBKDF2_HMAC(password, strlen(password), salt, SALT_LENGTH,
+							 iterations, EVP_sha512(), outputBytes, digest);
 }
 
 // Based on https://stackoverflow.com/a/6869218
@@ -43,12 +41,25 @@ int main(int argc, char **argv) {
 	size_t lengthOfPassword = 0;
 	puts("Please enter your password:");
 	int status = getpassword(&password, &lengthOfPassword, stdin);
-	assert(status != -1);
+	if (status == -1) {
+		perror("getpassword");
+		return -1;
+	}
 	printf("Generating keyfile: %s\n", keyName);
 	unsigned char *digest = malloc(HASH_LENGTH);
-	assert(digest);
+	if (!digest) {
+		free(password);
+		fputs("malloc failed!", stderr);
+		return -1;
+	}
 	unsigned char *salt = (unsigned char *)SALT;
-	hash(password, salt, 100, HASH_LENGTH, digest);
+	status = hash(password, salt, 100, HASH_LENGTH, digest);
+	if (!status) {
+		fputs("hash failed\n", stderr);
+		free(digest);
+		free(password);
+		return -1;
+	}
 	generateKey(digest, keyName);
 	memset(password, 0, lengthOfPassword);
 	free(digest);
