@@ -80,7 +80,7 @@ static Key _readKey(FILE *fp) {
 	if (buffer == NULL)
 		goto end2;
 	status = fread(buffer, 1, size, fp);
-	if (status != (off_t)size)
+	if (status != (size_t)size)
 		goto end3;
 	SHA512(buffer, size, (unsigned char *)key->hash);
 	free(buffer);
