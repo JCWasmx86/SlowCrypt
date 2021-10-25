@@ -31,7 +31,6 @@ Furthermore, at least `gcc` (Version 10 and upwards) is required for compiling.
 ## Build
 - `make all` builds SlowCrypt with compiler optimizations and without debug infos.
 - `make all-debug` builds SlowCrypt for debugging.
-- `make all-noassert` is the same as `make all`, except `assert` is disabled.
 - `make clean` removes the `bin` directory.
 - `make format` formats the code.
 - `make install` installs the code into `$PREFIX` (Default: `/usr/local`)

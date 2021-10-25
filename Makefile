@@ -43,21 +43,5 @@ uninstall:
 	rm $(PREFIX)/bin/keygen
 	rm $(PREFIX)/bin/keydump
 	rm $(PREFIX)/bin/pwd2key
-make-deb: all
-	mkdir -p bin/debian/DEBIAN
-	echo Package: slowcrypt >bin/debian/DEBIAN/control
-	echo Version: 0.0.1-Beta >> bin/debian/DEBIAN/control
-	echo Section: custom >> bin/debian/DEBIAN/control
-	echo Architecture: `dpkg --print-architecture`>> bin/debian/DEBIAN/control
-	echo Depends: libssl1.1>>bin/debian/DEBIAN/control
-	echo Maintainer: JCWasmx86 >> bin/debian/DEBIAN/control
-	echo Description: Slowcrypt tools >> bin/debian/DEBIAN/control
-	mkdir -p bin/debian/usr/bin
-	mkdir -p bin/debian/usr/include
-	mkdir -p bin/debian/usr/lib
-	cp bin/encrypt bin/decrypt bin/keygen bin/keydump bin/pwd2key bin/debian/usr/bin
-	cp include/slowcrypt.h bin/debian/usr/include
-	ar csr bin/debian/usr/lib/libslowcrypt.a bin/obj/shared.o
-	dpkg-deb --build bin/debian slowcrypt.deb
 format:
 	find src include -iname *.h -o -iname *.c | xargs clang-format --style=file -verbose -i
