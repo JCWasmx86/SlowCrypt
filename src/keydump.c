@@ -53,7 +53,7 @@ static void printKey(char *filename) {
 	printf("howManyAdds: %" PRIu16 "\n", key->howManyAdds);
 	printf("SHA-512: ");
 	for (int i = 0; i < 8; i++) {
-		printf("%" PRIu64, key->hash[i]);
+		printf("%" PRIx64, key->hash[i]);
 	}
 	printf("\n");
 	releaseKey(key);
@@ -88,7 +88,7 @@ static void processArgs(int argc, char **argv) {
 }
 static void printHelp(char *this) {
 	puts(this);
-	printf("Usage: %s <outputFile>* (Default: key.key) \n", this);
+	printf("Usage: %s <inputFile>* (Default: key.key) \n", this);
 	puts("--version -v Print version");
 	puts("--help    -h Print this help");
 }

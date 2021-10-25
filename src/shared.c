@@ -338,8 +338,7 @@ static void printHelp(char *this) {
 	puts("--in         Set the input file");
 	puts("--out        Set the output file");
 	puts("--key        Set the key file. (Default key.key)");
-	puts("--memory	   Encrypt/decrypt in memory (Leads to more a higher "
-		 "usage");
+	puts("--memory	   Encrypt/decrypt in memory (Leads to a higher memory usage)");
 }
 static uint64_t encrypt_(uint64_t v, uint64_t lastValue, Key k) {
 	uint64_t start = v;
