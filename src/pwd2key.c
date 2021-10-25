@@ -11,14 +11,14 @@
 
 ssize_t getpassword(char **lineptr, size_t *n, FILE *stream);
 void generateKey(unsigned char *digest, char *outputFile);
-int hash(const char *password, const unsigned char *salt, int32_t iterations,
+int hash(const char *password, const unsigned char *salt,
 		 uint32_t outputBytes, unsigned char *digest);
 char *evalArgumentsForPwd2key(int argc, char **argv);
 
-int hash(const char *password, const unsigned char *salt, int32_t iterations,
+int hash(const char *password, const unsigned char *salt,
 		 uint32_t outputBytes, unsigned char *digest) {
 	return PKCS5_PBKDF2_HMAC(password, strlen(password), salt, SALT_LENGTH,
-							 iterations, EVP_sha512(), outputBytes, digest);
+							 NUM_ITERATIONS, EVP_sha512(), outputBytes, digest);
 }
 
 // Based on https://stackoverflow.com/a/6869218
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 	unsigned char *salt = (unsigned char *)SALT;
-	status = hash(password, salt, 100, HASH_LENGTH, digest);
+	status = hash(password, salt, HASH_LENGTH, digest);
 	if (!status) {
 		fputs("hash failed\n", stderr);
 		free(digest);
